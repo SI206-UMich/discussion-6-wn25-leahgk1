@@ -18,6 +18,17 @@ def load_csv(f):
     base_path = os.path.abspath(os.path.dirname(__file__))
     full_path = os.path.join(base_path, f)
     # use this 'full_path' variable as the file that you open
+    
+    result = {}
+    with open(full_path, 'r') as file:
+        header = file.readline() 
+        for line in file:
+            year, month, value = line.rstrip().split(',')
+            if year not in result:
+                result[year] = {}
+            result[year][month] = value
+            
+    return result
 
 def get_annual_max(d):
     '''
@@ -68,6 +79,12 @@ class dis7_test(unittest.TestCase):
 
 def main():
     unittest.main(verbosity=2)
+    print("----------------------------------------------------------------------")
+    flight_dict = load_csv('daily_visitors.csv')
+    print("Output of load_csv:", flight_dict, "\n")
+    print("Output of get_annual_max:", get_annual_max(flight_dict), "\n")
+    print("Output of get_month_avg:", get_month_avg(flight_dict), "\n")
+
 
 if __name__ == '__main__':
     main()
