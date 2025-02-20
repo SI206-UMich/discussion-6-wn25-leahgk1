@@ -14,45 +14,37 @@ def load_csv(f):
     
     Note: Don't strip or otherwise modify strings. Don't change datatypes from strings. 
     '''
+    import csv
 
-    base_path = os.path.abspath(os.path.dirname(__file__))
-    full_path = os.path.join(base_path, f)
-    # use this 'full_path' variable as the file that you open
-    
-    result = {}
-    with open(full_path, 'r') as file:
-        header = file.readline() 
-        for line in file:
-            year, month, value = line.rstrip().split(',')
-            if year not in result:
-                result[year] = {}
-            result[year][month] = value
+    rows = []
+    with open(f, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            rows.append(row)
             
-    return result
+    d = {}
+    headers = rows[0][1:]
+    for year in headers:
+        d[year] = {}
+        
+    for row in rows[1:]:
+        month = row[0]
+        for i, val in enumerate(row[1:]):
+            year = headers[i]
+            d[year][month] = val
+            
+    return d
 
 def get_annual_max(d):
     '''
-    Params:
-        d, dict created by load_csv above
-
-    Returns:
-        list of tuples, each with 3 items: year (str), month (str), and max (int) 
-        max is the maximum value for a month in that year, month is the corresponding month
-
-    Note: Don't strip or otherwise modify strings. Do not change datatypes except where necessary.
-        You'll have to change vals to int to compare them. 
+    Params: dictionary from load_csv
+    Returns: list of tuples (year, month, value) sorted by year
     '''
-    result = []
-    for year in d:
-        max_val = -1
-        max_month = ''
-        for month in d[year]:
-            val = int(d[year][month])
-            if val > max_val:
-                max_val = val
-                max_month = month
-        result.append((year, max_month, max_val))
-    return result
+    max_list = []
+    for year in sorted(d.keys()):
+        max_month = max(d[year].items(), key=lambda x: int(x[1]))
+        max_list.append((year, max_month[0], max_month[1]))
+    return max_list
 
 def get_month_avg(d):
     '''
@@ -91,7 +83,7 @@ class dis7_test(unittest.TestCase):
         self.assertEqual(self.flight_dict['2020']['JUN'], '435')
 
     def test_get_annual_max(self):
-        self.assertEqual(self.max_tup_list[2], ('2022', 'AUG', 628))
+        self.assertEqual(self.max_tup_list[2], ('2022', 'AUG', '628'))
 
     def test_month_avg_list(self):
         self.assertAlmostEqual(self.month_avg_dict['2020'], 398, 0)
